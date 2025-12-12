@@ -144,3 +144,18 @@ function includeTemplate($name, array $data = [])
 
     return $result;
 }
+
+/**
+ * Форматирует цену
+ * @param int $price Цена
+ * @return string Форматированая цена
+ */
+
+function formatPrice(int $price): string
+{
+    $price = ceil($price);
+    if ($price > 999) {
+        $price = number_format($price, 0, '', ' ');
+    }
+    return "$price<b class='rub'>р</b>";
+}
