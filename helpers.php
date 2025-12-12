@@ -1,21 +1,23 @@
 <?php
+
 /**
  * Проверяет переданную дату на соответствие формату 'ГГГГ-ММ-ДД'
  *
  * Примеры использования:
- * is_date_valid('2019-01-01'); // true
- * is_date_valid('2016-02-29'); // true
- * is_date_valid('2019-04-31'); // false
- * is_date_valid('10.10.2010'); // false
- * is_date_valid('10/10/2010'); // false
+ * isDateValid('2019-01-01'); // true
+ * isDateValid('2016-02-29'); // true
+ * isDateValid('2019-04-31'); // false
+ * isDateValid('10.10.2010'); // false
+ * isDateValid('10/10/2010'); // false
  *
  * @param string $date Дата в виде строки
  *
  * @return bool true при совпадении с форматом 'ГГГГ-ММ-ДД', иначе false
  */
-function is_date_valid(string $date) : bool {
-    $format_to_check = 'Y-m-d';
-    $dateTimeObj = date_create_from_format($format_to_check, $date);
+function isDateValid(string $date): bool
+{
+    $formatToCheck = 'Y-m-d';
+    $dateTimeObj = date_create_from_format($formatToCheck, $date);
 
     return $dateTimeObj !== false && array_sum(date_get_last_errors()) === 0;
 }
@@ -29,7 +31,8 @@ function is_date_valid(string $date) : bool {
  *
  * @return mysqli_stmt Подготовленное выражение
  */
-function db_get_prepare_stmt($link, $sql, $data = []) {
+function dbGetPrepareStmt($link, $sql, $data = [])
+{
     $stmt = mysqli_prepare($link, $sql);
 
     if ($stmt === false) {
@@ -39,28 +42,26 @@ function db_get_prepare_stmt($link, $sql, $data = []) {
 
     if ($data) {
         $types = '';
-        $stmt_data = [];
+        $stmtData = [];
 
         foreach ($data as $value) {
             $type = 's';
 
             if (is_int($value)) {
                 $type = 'i';
-            }
-            else if (is_string($value)) {
+            } elseif (is_string($value)) {
                 $type = 's';
-            }
-            else if (is_double($value)) {
+            } elseif (is_double($value)) {
                 $type = 'd';
             }
 
             if ($type) {
                 $types .= $type;
-                $stmt_data[] = $value;
+                $stmtData[] = $value;
             }
         }
 
-        $values = array_merge([$stmt, $types], $stmt_data);
+        $values = array_merge([$stmt, $types], $stmtData);
 
         $func = 'mysqli_stmt_bind_param';
         $func(...$values);
@@ -96,7 +97,7 @@ function db_get_prepare_stmt($link, $sql, $data = []) {
  *
  * @return string Рассчитанная форма множественнго числа
  */
-function get_noun_plural_form (int $number, string $one, string $two, string $many): string
+function getNounPluralForm(int $number, string $one, string $two, string $many): string
 {
     $number = (int) $number;
     $mod10 = $number % 10;
@@ -126,7 +127,8 @@ function get_noun_plural_form (int $number, string $one, string $two, string $ma
  * @param array $data Ассоциативный массив с данными для шаблона
  * @return string Итоговый HTML
  */
-function include_template($name, array $data = []) {
+function includeTemplate($name, array $data = [])
+{
     $name = 'templates/' . $name;
     $result = '';
 
@@ -143,4 +145,17 @@ function include_template($name, array $data = []) {
     return $result;
 }
 
+/**
+ * Форматирует цену
+ * @param int $price Цена
+ * @return string Форматированая цена
+ */
 
+function formatPrice(int $price): string
+{
+    $price = ceil($price);
+    if ($price > 999) {
+        $price = number_format($price, 0, '', ' ');
+    }
+    return "$price<b class='rub'>р</b>";
+}
