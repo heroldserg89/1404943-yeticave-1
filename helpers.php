@@ -31,7 +31,7 @@ function isDateValid(string $date): bool
  *
  * @return mysqli_stmt Подготовленное выражение
  */
-function dbGetPrepareStmt($link, $sql, $data = [])
+function dbGetPrepareStmt(mysqli $link, string $sql, array $data = []): mysqli_stmt
 {
     $stmt = mysqli_prepare($link, $sql);
 
@@ -99,26 +99,16 @@ function dbGetPrepareStmt($link, $sql, $data = [])
  */
 function getNounPluralForm(int $number, string $one, string $two, string $many): string
 {
-    $number = (int) $number;
     $mod10 = $number % 10;
     $mod100 = $number % 100;
 
-    switch (true) {
-        case ($mod100 >= 11 && $mod100 <= 20):
-            return $many;
-
-        case ($mod10 > 5):
-            return $many;
-
-        case ($mod10 === 1):
-            return $one;
-
-        case ($mod10 >= 2 && $mod10 <= 4):
-            return $two;
-
-        default:
-            return $many;
-    }
+    return match (true) {
+        $mod100 >= 11 && $mod100 <= 20 => $many,
+        $mod10 > 5 => $many,
+        $mod10 === 1 => $one,
+        $mod10 >= 2 && $mod10 <= 4 => $two,
+        default => $many,
+    };
 }
 
 /**
@@ -127,10 +117,10 @@ function getNounPluralForm(int $number, string $one, string $two, string $many):
  * @param array $data Ассоциативный массив с данными для шаблона
  * @return string Итоговый HTML
  */
-function includeTemplate($name, array $data = [])
+function includeTemplate(string $name, array $data = []): string
 {
-    $name = 'templates/' . $name;
-    $result = '';
+    $name = "templates/{$name}";
+    $result = 'Ошибка загрузки шаблона';
 
     if (!is_readable($name)) {
         return $result;
@@ -140,22 +130,20 @@ function includeTemplate($name, array $data = [])
     extract($data);
     require $name;
 
-    $result = ob_get_clean();
-
-    return $result;
+    return ob_get_clean();
 }
 
 /**
  * Форматирует цену
- * @param int $price Цена
+ * @param float $price Цена
  * @return string Форматированая цена
  */
 
-function formatPrice(int $price): string
+function formatPrice(float $price): string
 {
     $price = ceil($price);
     if ($price > 999) {
         $price = number_format($price, 0, '', ' ');
     }
-    return "$price<b class='rub'>р</b>";
+    return "{$price}<b class='rub'>р</b>";
 }
