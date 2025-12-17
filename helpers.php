@@ -119,7 +119,7 @@ function getNounPluralForm(int $number, string $one, string $two, string $many):
  */
 function includeTemplate(string $name, array $data = []): string
 {
-    $name = "templates/{$name}";
+    $name = "templates/$name";
     $result = 'Ошибка загрузки шаблона';
 
     if (!is_readable($name)) {
@@ -145,5 +145,31 @@ function formatPrice(float $price): string
     if ($price > 999) {
         $price = number_format($price, 0, '', ' ');
     }
-    return "{$price}<b class='rub'>р</b>";
+    return "$price<b class='rub'>р</b>";
+}
+
+/**
+ * Вычисляет оставшееся время до указанной будущей даты и возвращает количество целых часов и минут.
+ * @param string $date дату в формате ГГГГ-ММ-ДД
+ * @return array Количество часов и минут до указаной даты
+ */
+
+function getTimeRemaining(string $date): array
+{
+    $curDate = date_create();
+    try {
+        $endDate = date_create($date);
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+        return ['00', '00'];
+    }
+
+    if ($endDate <= $curDate) {
+        return ['00', '00'];
+    }
+    $diff = date_diff($curDate, $endDate);
+    $totalHours = ($diff->days * 24) + $diff->h;
+    $totalHours = str_pad($totalHours, 2, '0', STR_PAD_LEFT);
+    $minutes = str_pad($diff->i, 2, '0', STR_PAD_LEFT);
+    return [$totalHours,$minutes];
 }
