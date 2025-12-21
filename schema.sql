@@ -5,7 +5,7 @@ USE yeticave;
 
 CREATE TABLE categories
 (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   title       VARCHAR(80) NOT NULL,
   symbol_code VARCHAR(50),
   UNIQUE INDEX idx_symbol_cole (symbol_code),
@@ -14,7 +14,7 @@ CREATE TABLE categories
 
 CREATE TABLE users
 (
-  id         INT AUTO_INCREMENT PRIMARY KEY,
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   email      VARCHAR(80) NOT NULL,
   name       VARCHAR(80) NOT NULL,
@@ -25,17 +25,17 @@ CREATE TABLE users
 
 CREATE TABLE lots
 (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
   title       VARCHAR(80)  NOT NULL,
   description TEXT         NOT NULL,
   img_url     VARCHAR(255) NOT NULL,
   price_start INT          NOT NULL,
   end_at      DATE         NOT NULL,
-  price_step  INT          NOT NULL,
-  author_id   INT          NOT NULL,
-  winner_id   INT          NOT NULL,
-  category_id INT          NOT NULL,
+  price_step  INT UNSIGNED NOT NULL,
+  author_id   INT UNSIGNED NOT NULL,
+  winner_id   INT UNSIGNED NULL,
+  category_id INT UNSIGNED NOT NULL,
   FOREIGN KEY (author_id) REFERENCES users (id),
   FOREIGN KEY (winner_id) REFERENCES users (id),
   FOREIGN KEY (category_id) REFERENCES categories (id),
@@ -45,11 +45,11 @@ CREATE TABLE lots
 
 CREATE TABLE bets
 (
-  id         INT AUTO_INCREMENT PRIMARY KEY,
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  price      INT NOT NULL,
-  user_id    INT NOT NULL,
-  lot_id     INT NOT NULL,
+  price      INT UNSIGNED NOT NULL,
+  user_id    INT UNSIGNED NOT NULL,
+  lot_id     INT UNSIGNED NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users (id),
   FOREIGN KEY (lot_id) REFERENCES lots (id),
   INDEX idx_created_at (created_at)
