@@ -6,6 +6,7 @@
  * @var array $categories
  * @var string $content
  */
+
 ?>
 
 <!DOCTYPE html>
@@ -32,13 +33,15 @@
             <a class="main-header__add-lot button" href="pages/add-lot.html">Добавить лот</a>
 
             <nav class="user-menu">
-                <?php if ($isAuth === 1) : ?>
+                <?php
+                if ($isAuth === 1) : ?>
                     <div class="user-menu__logged">
                         <p><?= htmlspecialchars($userName); ?></p>
                         <a class="user-menu__bets" href="pages/my-bets.html">Мои ставки</a>
                         <a class="user-menu__logout" href="#">Выход</a>
                     </div>
-                <?php else : ?>
+                <?php
+                else : ?>
                     <ul class="user-menu__list">
                         <li class="user-menu__item">
                             <a href="#">Регистрация</a>
@@ -47,22 +50,25 @@
                             <a href="#">Вход</a>
                         </li>
                     </ul>
-                <?php endif; ?>
+                <?php
+                endif; ?>
             </nav>
         </div>
     </header>
 
-<?=$content;?>
+    <?= $content; ?>
 </div>
 
 <footer class="main-footer">
     <nav class="nav">
         <ul class="nav__list container">
-            <?php foreach ($categories as $category) : ?>
+            <?php
+            foreach ($categories as $category) : ?>
                 <li class="nav__item">
-                    <a href="pages/all-lots.html"><?= htmlspecialchars($category['name']); ?></a>
+                    <a href="pages/all-lots.html"><?= htmlspecialchars($category['title']); ?></a>
                 </li>
-            <?php endforeach; ?>
+            <?php
+            endforeach; ?>
         </ul>
     </nav>
     <div class="main-footer__bottom container">
