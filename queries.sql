@@ -22,7 +22,7 @@ VALUES ('2014 Rossignol District Snowboard', '', 'img/lot-1.jpg', 10999, '2026-0
 
        ('Крепления Union Contact Pro 2015 года размер L/XL', '', 'img/lot-3.jpg', 8000, '2026-01-15', 1000, 2, NULL, 2),
 
-       ('2Ботинки для сноуборда DC Mutiny Charcoal', '', 'img/lot-4.jpg', 10999, '2026-01-15', 1000, 2, NULL, 3),
+       ('Ботинки для сноуборда DC Mutiny Charcoal', '', 'img/lot-4.jpg', 10999, '2026-01-15', 1000, 2, NULL, 3),
 
        ('Куртка для сноуборда DC Mutiny Charcoal', '', 'img/lot-5.jpg', 7500, '2026-01-15', 1000, 1, NULL, 4),
 

@@ -1,10 +1,12 @@
 <?php
 /**
- * @var string $title
+ * @var string $titlePage
  * @var int $isAuth
  * @var string $userName
  * @var array $categories
+ * @var string $menu
  * @var string $content
+ * @var bool $isMain
  */
 
 ?>
@@ -13,7 +15,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title><?= $title; ?></title>
+    <title><?= $titlePage; ?></title>
     <link href="../css/normalize.min.css" rel="stylesheet">
     <link href="../css/style.css" rel="stylesheet">
 </head>
@@ -23,7 +25,7 @@
     <header class="main-header">
         <div class="main-header__container container">
             <h1 class="visually-hidden">YetiCave</h1>
-            <a class="main-header__logo">
+            <a class="main-header__logo" <?= isset($isMain) ? '' : 'href="/"' ?>>
                 <img src="../img/logo.svg" width="160" height="39" alt="Логотип компании YetiCave">
             </a>
             <form class="main-header__search" method="get" action="https://echo.htmlacademy.ru" autocomplete="off">
@@ -40,7 +42,7 @@
                         <a class="user-menu__bets" href="pages/my-bets.html">Мои ставки</a>
                         <a class="user-menu__logout" href="#">Выход</a>
                     </div>
-                <?php
+                    <?php
                 else : ?>
                     <ul class="user-menu__list">
                         <li class="user-menu__item">
@@ -50,13 +52,15 @@
                             <a href="#">Вход</a>
                         </li>
                     </ul>
-                <?php
+                    <?php
                 endif; ?>
             </nav>
         </div>
     </header>
-
-    <?= $content; ?>
+    <main>
+        <?= $menu; ?>
+        <?= $content; ?>
+    </main>
 </div>
 
 <footer class="main-footer">
@@ -67,7 +71,7 @@
                 <li class="nav__item">
                     <a href="pages/all-lots.html"><?= htmlspecialchars($category['title']); ?></a>
                 </li>
-            <?php
+                <?php
             endforeach; ?>
         </ul>
     </nav>
