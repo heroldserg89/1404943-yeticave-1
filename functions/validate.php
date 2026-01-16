@@ -21,3 +21,12 @@ function isDateValid(string $date): bool
 
     return $dateTimeObj !== false && array_sum(date_get_last_errors()) === 0;
 }
+
+function validateCategory($id, $allowedList): ?string
+{
+    if (!in_array($id, $allowedList)) {
+        return "Указана несуществующая категория";
+    }
+
+    return null;
+}
