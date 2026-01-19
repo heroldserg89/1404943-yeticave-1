@@ -98,3 +98,16 @@ function getTimeRemaining(string $date): array
     $minutes = str_pad($diff->i, 2, '0', STR_PAD_LEFT);
     return [$totalHours, $minutes];
 }
+
+/**
+ * Возвращает CSS-класс для невалидного поля
+ *
+ * @param array $errors Массив ошибок
+ * @param string $field Название поля
+ * @param string $class CSS-класс для невалидного поля
+ * @return string CSS-класс или пустая строка
+ */
+function getErrorClass(array $errors, string $field, string $class = 'form__item--invalid'): string
+{
+    return isset($errors[$field]) ? $class : '';
+}
