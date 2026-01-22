@@ -18,10 +18,8 @@ function isDateValid(string $date): bool
 {
     $formatToCheck = 'Y-m-d';
     $dateTimeObj = date_create_from_format($formatToCheck, $date);
-    if ($dateTimeObj === false) {
-        return false;
-    }
-    return true;
+
+    return $dateTimeObj !== false && !date_get_last_errors();
 }
 
 function validateCategory(string $id, array $categories): ?string
@@ -61,6 +59,11 @@ function validateDateFormat(string $date): ?string
 {
     if (!isDateValid($date)) {
         return 'Введите дату в формате "ГГГГ-ММ-ДД"';
+    }
+    $endDate = date_create($date);
+    $currentDate = date_create();
+    if ($endDate <= $currentDate) {
+        return 'Дата должна быть не меньше завтрашнего дня';
     }
     return null;
 }

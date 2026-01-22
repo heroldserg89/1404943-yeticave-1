@@ -14,7 +14,6 @@ try {
     $catIds = array_column($categories, 'id');
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $required = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];
         $errors = [];
 
         $rules = [
@@ -25,7 +24,7 @@ try {
                 return validateCategory($value, $catIds);
             },
             'message' => function ($value) {
-                return validateTextLength($value, 10, 0);
+                return validateTextLength($value, 10);
             },
             'lot-rate' => function ($value) {
                 return validateNumber($value);
@@ -37,7 +36,15 @@ try {
                 return validateDateFormat($value);
             }
         ];
-        $formInputs = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+        $formInputs = filter_input_array(INPUT_POST,
+            [
+                'lot-name' => FILTER_DEFAULT,
+                'category' => FILTER_DEFAULT,
+                'message' => FILTER_DEFAULT,
+                'lot-rate' => FILTER_DEFAULT,
+                'lot-step' => FILTER_DEFAULT,
+                'lot-date' => FILTER_DEFAULT,
+            ]);
 
         foreach ($formInputs as $key => $value) {
             if (isset($rules[$key])) {
@@ -69,8 +76,21 @@ try {
         } else {
             $errors['lot-img'] = 'Вы не загрузили файл';
         }
+        var_dump($formInputs);
+        if (empty($errors)) {
+            $sql = "INSERT INTO lots (title, category_id, description, price_start, lots.price_step, end_at, author_id,
+                img_url) VALUES (?, ?, ?, ?, ?, ?, 1,  ?)";
+            $stmt = dbGetPrepareStmt($con, $sql, $formInputs);
+            $res = mysqli_stmt_execute($stmt);
+            if ($res) {
+                $lotId = mysqli_insert_id($con);
+                header('location: lot.php?id=' . $lotId);
+                exit;
+            }
+        }
     }
 } catch (Exception $e) {
+    var_dump($e->getMessage());
     error_log($e->getMessage());
     http_response_code(500);
     echo "Внутренняя ошибка сервера";
