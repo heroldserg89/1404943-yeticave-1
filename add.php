@@ -93,7 +93,6 @@ try {
         }
     }
 } catch (Exception $e) {
-    var_dump($e->getMessage());
     error_log($e->getMessage());
     http_response_code(500);
     echo "Внутренняя ошибка сервера";
@@ -104,7 +103,7 @@ mysqli_close($con);
 $menu = includeTemplate('menu.php', [
     'categories' => $categories,
 ]);
-$content = includeTemplate('form-add-lot.php', [
+$content = includeTemplate('add-lot.php', [
     'categories' => $categories,
     'errors' => $errors ?? [],
     'formInputs' => $formInputs ?? []

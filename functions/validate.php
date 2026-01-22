@@ -36,7 +36,7 @@ function validateNumber(string $value): ?string
     $result = filter_var($value, FILTER_VALIDATE_INT, [
         'options' => ['min_range' => 1]
     ]);
-    
+
     if (!$result) {
         return 'Поле должно быть числом больше нуля.';
     }
@@ -72,3 +72,11 @@ function validateDateFormat(string $date): ?string
     return null;
 }
 
+function validateEmail(string $value): ?string
+{
+    $result = filter_var($value, FILTER_VALIDATE_EMAIL);
+    if ($result === false) {
+        return 'Введите корректный email';
+    }
+    return null;
+}
