@@ -105,3 +105,16 @@ function getLotById(mysqli $con, int $lotId): array
     $result = mysqli_query($con, $sql);
     return mysqli_fetch_assoc($result);
 }
+
+function getBetsByLotID(mysqli $con, $lotId): array
+{
+    $sql = "SELECT b.price, b.created_at, u.name AS user_name
+            FROM bets b
+            JOIN users u ON u.id = user_id
+            WHERE lot_id = $lotId
+            ORDER BY b.created_at DESC;";
+
+    $result = mysqli_query($con, $sql);
+
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}

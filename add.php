@@ -59,27 +59,30 @@ try {
                 'image/jpeg' => '.jpg',
                 'image/png' => '.png'
             ];
-            $tmp_name = $_FILES['lot-img']['tmp_name'];
+            $tmpName = $_FILES['lot-img']['tmp_name'];
             $path = $_FILES['lot-img']['name'];
 
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $file_type = finfo_file($finfo, $tmp_name);
+            $file_type = finfo_file($finfo, $tmpName);
 
             if (!isset($allowedFileTypes[$file_type])) {
                 $errors['lot-img'] = 'Загрузите картинку в формате JPEG и PNG';
             } else {
                 $filename = uniqid() . $allowedFileTypes[$file_type];
-                move_uploaded_file($tmp_name, __DIR__ . "/uploads/$filename");
-                $formInputs['lot-img'] = $filename;
+                $uploadPath = __DIR__ . "/uploads/$filename";
+
+                if (move_uploaded_file($tmpName, $uploadPath)) {
+                    $formInputs['lot-img'] = "/uploads/$filename";
+                } else {
+                    $errors['lot-img'] = 'Ошибка при загрузке файла';
+                }
             }
 
         } else {
             $errors['lot-img'] = 'Вы не загрузили файл';
         }
-        var_dump($formInputs);
         if (empty($errors)) {
-            $sql = "INSERT INTO lots (title, category_id, description, price_start, lots.price_step, end_at, author_id,
-                img_url) VALUES (?, ?, ?, ?, ?, ?, 1,  ?)";
+            $sql = "INSERT INTO lots (title, category_id, description, price_start,mg_url) VALUES (?, ?, ?, ?, ?, ?, 1,  ?)";
             $stmt = dbGetPrepareStmt($con, $sql, $formInputs);
             $res = mysqli_stmt_execute($stmt);
             if ($res) {

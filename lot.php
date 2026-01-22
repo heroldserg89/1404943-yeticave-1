@@ -19,9 +19,14 @@ try {
     if (!$lot) {
         throw new Exception('Такая страница не найдена', 404);
     }
+    $bets = getBetsByLotID($con, $lotId);
 
     $title = $lot['title'];
-    $content = includeTemplate('lot.php', ['lot' => $lot]);
+    $content = includeTemplate('lot.php',
+        [
+            'lot' => $lot,
+            'bets' => $bets
+        ]);
 } catch (Exception $e) {
     if ($e->getCode() == 404) {
         $content = includeTemplate('404.php');
@@ -44,7 +49,7 @@ print includeTemplate('layout.php', [
     'userName' => $userName,
     'categories' => $categories,
     'menu' => $menu,
-    'content' => $content,
+    'content' => $content
 ]);
 
 mysqli_close($con);

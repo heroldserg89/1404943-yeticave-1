@@ -31,9 +31,13 @@ function validateCategory(string $id, array $categories): ?string
     return null;
 }
 
-function validateNumber(string $number): ?string
+function validateNumber(string $value): ?string
 {
-    if ((int)$number <= 0) {
+    $result = filter_var($value, FILTER_VALIDATE_INT, [
+        'options' => ['min_range' => 1]
+    ]);
+    
+    if (!$result) {
         return 'Поле должно быть числом больше нуля.';
     }
 

@@ -6,7 +6,6 @@
  */
 
 ?>
-
 <form class="form form--add-lot container" action="add.php" method="post"
       enctype="multipart/form-data">
     <h2>Добавление лота</h2>
@@ -24,7 +23,7 @@
                 <?php
                 foreach ($categories as $category) : ?>
                     <option value="<?= $category['id']; ?>"
-                        <?= $category['id'] === $formInputs['category'] ? 'selected' : ''; ?>>
+                        <?= $category['id'] === ($formInputs['category'] ?? '') ? 'selected' : ''; ?>>
                         <?= htmlspecialchars($category['title']); ?>
                     </option>
                 <?php
@@ -65,7 +64,8 @@
         <div class="form__item <?= getErrorClass($errors, 'lot-date'); ?>">
             <label for="lot-date">Дата окончания торгов <sup>*</sup></label>
             <input class="form__input-date" id="lot-date" type="text" name="lot-date"
-                   placeholder="Введите дату в формате ГГГГ-ММ-ДД" value="<?= htmlspecialchars($formInputs['lot-date'] ?? ''); ?>">
+                   placeholder="Введите дату в формате ГГГГ-ММ-ДД"
+                   value="<?= htmlspecialchars($formInputs['lot-date'] ?? ''); ?>">
             <span class="form__error"><?= $errors['lot-date'] ?? ''; ?></span>
         </div>
     </div>
