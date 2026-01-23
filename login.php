@@ -42,6 +42,32 @@ try {
         }
 
         $errors = array_filter($errors);
+        if (empty($errors)) {
+            $email = mysqli_real_escape_string($con, $formInputs['email']);
+            $sql = "SELECT id, password, name, contacts FROM users WHERE email = '$email'";
+            $res = mysqli_query($con, $sql);
+            $user = $res ? mysqli_fetch_assoc($res) : null;
+            if ($user) {
+                if (password_verify($formInputs['password'], $user['password'])) {
+                    unset($user['password']);
+                    $_SESSION['user'] = $user;
+                } else {
+                    $errors['password'] = 'Неверный пароль';
+                }
+            } else {
+                $errors['email'] = 'Такой пользователь не найден';
+            }
+            if (empty($errors)) {
+                header("Location: /index.php");
+                exit();
+            }
+        }
+
+    } else {
+        if (isset($_SESSION['user'])) {
+            header("Location: /index.php");
+            exit();
+        }
     }
 } catch (Exception $e) {
     error_log($e->getMessage());

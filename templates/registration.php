@@ -4,7 +4,8 @@
  * @var array $formInputs
  */
 ?>
-<form class="form container" action="sign-up.php" method="post" autocomplete="off">
+<form class="form container <?= !empty($errors) ? 'form--invalid' : '' ?>" action="sign-up.php" method="post"
+      autocomplete="off">
     <h2>Регистрация нового аккаунта</h2>
     <div class="form__item <?= getErrorClass($errors, 'email'); ?>">
         <label for="email">E-mail <sup>*</sup></label>

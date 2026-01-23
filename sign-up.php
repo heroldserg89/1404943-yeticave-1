@@ -14,7 +14,7 @@ try {
     $catIds = array_column($categories, 'id');
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $required = ['email', 'password', 'name', 'message'];;
+        $required = ['email', 'password', 'name', 'message'];
         $errors = [];
 
         $rules = [
