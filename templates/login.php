@@ -14,8 +14,7 @@
     </div>
     <div class="form__item form__item--last <?= getErrorClass($errors, 'password'); ?>">
         <label for="password">Пароль <sup>*</sup></label>
-        <input id="password" type="password" name="password" placeholder="Введите пароль"
-               value="<?= htmlspecialchars($formInputs['password'] ?? ''); ?>">
+        <input id="password" type="password" name="password" placeholder="Введите пароль">
         <span class="form__error"><?= $errors['password'] ?? ''; ?></span>
     </div>
     <button type="submit" class="button">Войти</button>

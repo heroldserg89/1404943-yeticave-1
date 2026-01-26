@@ -55,19 +55,29 @@ function dbGetPrepareStmt(mysqli $link, string $sql, array $data = []): mysqli_s
 
 function connectDB(array $config): mysqli
 {
-    $con = mysqli_connect($config['host'], $config['user'], $config['password'], $config['database']);
+    try {
+        $con = mysqli_connect($config['host'], $config['user'], $config['password'], $config['database']);
 
-    mysqli_set_charset($con, 'utf8');
-    return $con;
+        mysqli_set_charset($con, 'utf8');
+        return $con;
+    } catch (Exception $e) {
+        handleFatalError($e);
+        die();
+    }
 }
 
 
 function getCategories(mysqli $con): array
 {
     $sql = 'SELECT * FROM categories';
-    $result = mysqli_query($con, $sql);
 
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    try {
+        $result = mysqli_query($con, $sql);
+        return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    } catch (Exception $e) {
+        handleFatalError($e);
+        die();
+    }
 }
 
 function getLots(mysqli $con): array
@@ -86,13 +96,17 @@ FROM lots l
 WHERE l.end_at > NOW()
 GROUP BY l.id, l.created_at
 ORDER BY l.created_at DESC';
+    try {
+        $result = mysqli_query($con, $sql);
+        return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    } catch (Exception $e) {
+        handleFatalError($e);
+        die();
+    }
 
-    $result = mysqli_query($con, $sql);
-
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getLotById(mysqli $con, int $lotId): array
+function getLotById(mysqli $con, int $lotId): ?array
 {
     $sql = "SELECT l.*, c.title AS category_name,
             COALESCE(MAX(b.price), l.price_start) AS current_price,
@@ -103,7 +117,11 @@ function getLotById(mysqli $con, int $lotId): array
             WHERE l.id = $lotId
             GROUP BY l.id; ";
     $result = mysqli_query($con, $sql);
-    return mysqli_fetch_assoc($result);
+    $row = mysqli_fetch_assoc($result);
+    if ($row === false) {
+        return null;
+    }
+    return $row;
 }
 
 function getBetsByLotID(mysqli $con, $lotId): array

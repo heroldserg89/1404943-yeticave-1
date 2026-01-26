@@ -4,6 +4,7 @@
  * @var number $isAuth
  * @var string $userName
  * @var array $config
+ * @var array $user
  */
 include_once __DIR__ . '/init.php';
 
@@ -42,6 +43,7 @@ try {
         }
 
         $errors = array_filter($errors);
+
         if (empty($errors)) {
             $email = mysqli_real_escape_string($con, $formInputs['email']);
             $sql = "SELECT id, password, name, contacts FROM users WHERE email = '$email'";
@@ -62,7 +64,6 @@ try {
                 exit();
             }
         }
-
     } else {
         if (isset($_SESSION['user'])) {
             header("Location: /index.php");
@@ -86,8 +87,7 @@ $content = includeTemplate('login.php', [
 ]);
 print includeTemplate('layout.php', [
     'titlePage' => 'Регистрация пользователя',
-    'isAuth' => $isAuth,
-    'userName' => $userName,
+    'user' => $user,
     'menu' => $menu,
     'categories' => $categories,
     'content' => $content,

@@ -111,3 +111,10 @@ function getErrorClass(array $errors, string $field, string $class = 'form__item
 {
     return isset($errors[$field]) ? $class : '';
 }
+
+function handleFatalError(Exception $e)
+{
+    error_log($e->getMessage());
+    http_response_code(500);
+    echo "Внутренняя ошибка сервера";
+}

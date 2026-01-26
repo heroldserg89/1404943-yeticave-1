@@ -1,8 +1,7 @@
 <?php
 /**
  * @var string $titlePage
- * @var int $isAuth
- * @var string $userName
+ * @var  array $user
  * @var array $categories
  * @var string $menu
  * @var string $content
@@ -43,9 +42,9 @@
 
             <nav class="user-menu">
                 <?php
-                if ($isAuth === 1) : ?>
+                if ($user ?? false) : ?>
                     <div class="user-menu__logged">
-                        <p><?= htmlspecialchars($userName); ?></p>
+                        <p><?= htmlspecialchars($user['name']); ?></p>
                         <a class="user-menu__bets" href="pages/my-bets.html">Мои ставки</a>
                         <a class="user-menu__logout" href="logout.php">Выход</a>
                     </div>
