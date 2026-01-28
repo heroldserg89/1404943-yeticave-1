@@ -1,5 +1,7 @@
 <?php
 
+use JetBrains\PhpStorm\NoReturn;
+
 /**
  * Подключает шаблон, передает туда данные и возвращает итоговый HTML контент
  * @param string $name Путь к файлу шаблона относительно папки templates
@@ -112,9 +114,37 @@ function getErrorClass(array $errors, string $field, string $class = 'form__item
     return isset($errors[$field]) ? $class : '';
 }
 
-function handleFatalError(Exception $e)
+function handleFatalError(Exception $e): void
 {
-    error_log($e->getMessage());
+    error_log(sprintf(
+        "[%s] ERROR: %s\nFile: %s:%d\nTrace:\n%s\n---",
+        date('Y-m-d H:i:s'),
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine(),
+        $e->getTraceAsString()
+    ));
     http_response_code(500);
-    echo "Внутренняя ошибка сервера";
+    die("Внутренняя ошибка сервера");
+}
+
+function showError(string $message, array $categories, false|array $user): void
+{
+    $content = includeTemplate('403.php', [
+        'message' => $message
+    ]);
+    $titlePage = '403 Нет доступа';
+
+    $menu = includeTemplate('menu.php', [
+        'categories' => $categories,
+    ]);
+    print includeTemplate('layout.php', [
+        'titlePage' => $titlePage,
+        'user' => $user,
+        'menu' => $menu,
+        'categories' => $categories,
+        'content' => $content,
+    ]);
+    http_response_code(403);
+    exit();
 }

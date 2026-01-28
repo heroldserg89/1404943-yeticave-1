@@ -1,8 +1,8 @@
 <?php
-function isLoggedIn(): ?array
+function isLoggedIn(): false|array
 {
     if (isset($_SESSION['user'])) {
         return $_SESSION['user'];
     }
-    return null;
+    return false;
 }

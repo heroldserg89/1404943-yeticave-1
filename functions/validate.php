@@ -80,3 +80,18 @@ function validateEmail(string $value): ?string
     }
     return null;
 }
+
+function getErrorsValidate(array $inputs, array $rules, array $required): array
+{
+    $errors = [];
+    foreach ($inputs as $key => $value) {
+        if (isset($rules[$key])) {
+            $rule = $rules[$key];
+            $errors[$key] = $rule($value);
+        }
+        if (in_array($key, $required) && empty($value)) {
+            $errors[$key] = "Поле обязательно к заполнению";
+        }
+    }
+    return array_filter($errors);
+}

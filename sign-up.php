@@ -8,7 +8,9 @@
  */
 include_once __DIR__ . '/init.php';
 
-$catIds = array_column($categories, 'id');
+if ($user ?? false) {
+    showError('Доступ запрещен. Вы уже авторизованы', $categories, $user);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $required = ['email', 'password', 'name', 'message'];
@@ -36,30 +38,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => FILTER_DEFAULT
         ]);
 
-    foreach ($formInputs as $key => $value) {
-        if (isset($rules[$key])) {
-            $rule = $rules[$key];
-            $errors[$key] = $rule($value);
-        }
-        if (in_array($key, $required) && empty($value)) {
-            $errors[$key] = "Поле обязательно к заполнению";
-        }
-    }
-
-    $errors = array_filter($errors);
-
+    $errors = getErrorsValidate($formInputs, $rules, $required);
     if (empty($errors)) {
-        $email = mysqli_real_escape_string($con, $formInputs['email']);
-        $sql = "SELECT id FROM users WHERE email = '$email'";
-        $res = mysqli_query($con, $sql);
-        if (mysqli_num_rows($res) > 0) {
+        // Проверка существования пользователя с подготовленным выражением
+        $sql = "SELECT id FROM users WHERE email = ?";
+        $stmt = dbGetPrepareStmt($con, $sql, [$formInputs['email']]);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        if (mysqli_num_rows($result) > 0) {
             $errors['email'] = 'Пользователь с этим email уже зарегистрирован';
         } else {
             $password = password_hash($formInputs['password'], PASSWORD_DEFAULT);
+
             $sql = "INSERT INTO users (email, password, name, contacts) VALUES (?, ?, ?, ?)";
-            $stmt = dbGetPrepareStmt($con, $sql, [$email, $password, $formInputs['name'], $formInputs['message']]);
-            $res = mysqli_stmt_execute($stmt);
+            $stmt = dbGetPrepareStmt($con, $sql, [
+                $formInputs['email'],
+                $password,
+                $formInputs['name'],
+                $formInputs['message']
+            ]);
+
+            if (!mysqli_stmt_execute($stmt)) {
+                $errors['general'] = 'Ошибка при регистрации. Попробуйте позже.';
+            }
         }
+
         if (empty($errors)) {
             header("Location: /login.php");
             exit();

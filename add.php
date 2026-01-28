@@ -8,11 +8,14 @@
  */
 include_once __DIR__ . '/init.php';
 
-$catIds = array_column($categories, 'id');
+if ($user === false) {
+    showError('Доступ запрещен. Авторизуйтесь', $categories, $user);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $required = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];
-    $errors = [];
+
+    $catIds = array_column($categories, 'id');
 
     $rules = [
         'lot-name' => function ($value) {
@@ -44,17 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'lot-date' => FILTER_DEFAULT,
         ]);
 
-    foreach ($formInputs as $key => $value) {
-        if (isset($rules[$key])) {
-            $rule = $rules[$key];
-            $errors[$key] = $rule($value);
-        }
-        if (in_array($key, $required) && empty($value)) {
-            $errors[$key] = "Поле обязательно к заполнению";
-        }
-    }
+    $errors = getErrorsValidate($formInputs, $rules, $required);
 
-    $errors = array_filter($errors);
     if (!empty($_FILES['lot-img']['name'])) {
         $allowedFileTypes = [
             'image/jpeg' => '.jpg',

@@ -55,9 +55,8 @@ function dbGetPrepareStmt(mysqli $link, string $sql, array $data = []): mysqli_s
 
 function connectDB(array $config): mysqli
 {
+    $con = mysqli_connect($config['host'], $config['user'], $config['password'], $config['database']);
     try {
-        $con = mysqli_connect($config['host'], $config['user'], $config['password'], $config['database']);
-
         mysqli_set_charset($con, 'utf8');
         return $con;
     } catch (Exception $e) {
@@ -116,8 +115,14 @@ function getLotById(mysqli $con, int $lotId): ?array
             LEFT JOIN bets b ON l.id = b.lot_id
             WHERE l.id = $lotId
             GROUP BY l.id; ";
-    $result = mysqli_query($con, $sql);
-    $row = mysqli_fetch_assoc($result);
+    try {
+        $result = mysqli_query($con, $sql);
+        $row = mysqli_fetch_assoc($result);
+    } catch (Exception $e) {
+        handleFatalError($e);
+        die();
+    }
+
     if ($row === false) {
         return null;
     }
@@ -132,7 +137,11 @@ function getBetsByLotID(mysqli $con, $lotId): array
             WHERE lot_id = $lotId
             ORDER BY b.created_at DESC;";
 
-    $result = mysqli_query($con, $sql);
-
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    try {
+        $result = mysqli_query($con, $sql);
+        return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    } catch (Exception $e) {
+        handleFatalError($e);
+        die();
+    }
 }
