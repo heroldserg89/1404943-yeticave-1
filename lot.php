@@ -12,23 +12,17 @@ $lotId = intval($_GET['id'] ?? 0);
 
 $lot = getLotById($con, $lotId);
 
-try {
-    if (!$lot) {
-        throw new Exception('Такая страница не найдена', 404);
-    }
-    $bets = getBetsByLotID($con, $lotId);
-
-    $title = $lot['title'];
-    $content = includeTemplate('lot.php',
-        [
-            'lot' => $lot,
-            'bets' => $bets
-        ]);
-} catch (Exception $e) {
-    $content = includeTemplate('404.php');
-    $title = '404 Страница не найдена';
-    http_response_code(404);
+if (!$lot) {
+    showError404($categories, $user);
 }
+$bets = getBetsByLotID($con, $lotId);
+
+$title = $lot['title'];
+$content = includeTemplate('lot.php',
+    [
+        'lot' => $lot,
+        'bets' => $bets
+    ]);
 
 $menu = includeTemplate('menu.php', [
     'categories' => $categories,

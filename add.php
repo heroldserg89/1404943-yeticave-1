@@ -9,7 +9,7 @@
 include_once __DIR__ . '/init.php';
 
 if ($user === false) {
-    showError('Доступ запрещен. Авторизуйтесь', $categories, $user);
+    showError403('Доступ запрещен. Авторизуйтесь', $categories, $user);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -77,7 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['lot-img'] = 'Вы не загрузили файл';
     }
     if (empty($errors)) {
-        $sql = "INSERT INTO lots (title, category_id, description, price_start, price_step, end_at, author_id, img_url) VALUES (?, ?, ?, ?, ?, ?, 1,  ?)";
+        $formInputs['author_id'] = $user['id'];
+        var_dump($formInputs);
+        $sql = "INSERT INTO lots (title, category_id, description, price_start, price_step, end_at, img_url, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = dbGetPrepareStmt($con, $sql, $formInputs);
         $res = mysqli_stmt_execute($stmt);
         if ($res) {

@@ -75,9 +75,15 @@ function validateDateFormat(string $date): ?string
 function validateEmail(string $value): ?string
 {
     $result = filter_var($value, FILTER_VALIDATE_EMAIL);
+    $errorTextLength = validateTextLength($value, 5, 128);
+
+    if ($errorTextLength !== null) {
+        return $errorTextLength;
+    }
     if ($result === false) {
         return 'Введите корректный email';
     }
+
     return null;
 }
 

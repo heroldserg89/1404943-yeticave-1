@@ -114,24 +114,11 @@ function getErrorClass(array $errors, string $field, string $class = 'form__item
     return isset($errors[$field]) ? $class : '';
 }
 
-function handleFatalError(Exception $e): void
-{
-    error_log(sprintf(
-        "[%s] ERROR: %s\nFile: %s:%d\nTrace:\n%s\n---",
-        date('Y-m-d H:i:s'),
-        $e->getMessage(),
-        $e->getFile(),
-        $e->getLine(),
-        $e->getTraceAsString()
-    ));
-    http_response_code(500);
-    die("Внутренняя ошибка сервера");
-}
-
-function showError(string $message, array $categories, false|array $user): void
+function showError403(string $message, array $categories, false|array $user): void
 {
     $content = includeTemplate('403.php', [
-        'message' => $message
+        'message' => $message,
+        'user' => $user
     ]);
     $titlePage = '403 Нет доступа';
 
@@ -146,5 +133,26 @@ function showError(string $message, array $categories, false|array $user): void
         'content' => $content,
     ]);
     http_response_code(403);
+    exit();
+}
+
+function showError404(array $categories, $user): void
+{
+    $message = 'Данная страница не существует';
+    $content = includeTemplate('404.php', [
+        'message' => $message
+    ]);
+
+    $menu = includeTemplate('menu.php', [
+        'categories' => $categories,
+    ]);
+    print includeTemplate('layout.php', [
+        'titlePage' => $message,
+        'menu' => $menu,
+        'user' => $user,
+        'categories' => $categories,
+        'content' => $content,
+    ]);
+    http_response_code(404);
     exit();
 }
