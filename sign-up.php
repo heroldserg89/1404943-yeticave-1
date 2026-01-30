@@ -1,79 +1,73 @@
 <?php
 
 /**
- * @var number $isAuth
- * @var string $userName
  * @var array $config
+ * @var array $categories
+ * @var array $user
+ * @var mysqli $con
  */
 include_once __DIR__ . '/init.php';
 
-try {
-    $con = connectDB($config['db']);
+if ($user ?? false) {
+    showError403('Доступ запрещен. Вы уже авторизованы', $categories, $user);
+}
 
-    $categories = getCategories($con);
-    $catIds = array_column($categories, 'id');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $required = ['email', 'password', 'name', 'message'];
+    $errors = [];
+    $formInputs = filter_input_array(INPUT_POST,
+        [
+            'email' => FILTER_DEFAULT,
+            'password' => FILTER_DEFAULT,
+            'name' => FILTER_DEFAULT,
+            'message' => FILTER_DEFAULT
+        ]);
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $required = ['email', 'password', 'name', 'message'];;
-        $errors = [];
-
-        $rules = [
-            'email' => function ($value) {
-                return validateEmail($value);
-            },
-            'password' => function ($value) {
-                return validateTextLength($value, 8);
-            },
-            'name' => function ($value) {
-                return validateTextLength($value, 5, 80);
-            },
-            'message' => function ($value) {
-                return validateTextLength($value, 10);
+    $rules = [
+        'email' => function ($value) use ($con) {
+            $errorEmail = validateEmail($value);
+            if ($errorEmail !== null) {
+                return $errorEmail;
             }
-        ];
-        $formInputs = filter_input_array(INPUT_POST,
-            [
-                'email' => FILTER_DEFAULT,
-                'password' => FILTER_DEFAULT,
-                'name' => FILTER_DEFAULT,
-                'message' => FILTER_DEFAULT
-            ]);
-
-        foreach ($formInputs as $key => $value) {
-            if (isset($rules[$key])) {
-                $rule = $rules[$key];
-                $errors[$key] = $rule($value);
+            if (getUsersByEmail($con, $value)) {
+                return 'Пользователь с этим email уже зарегистрирован';
             }
-            if (in_array($key, $required) && empty($value)) {
-                $errors[$key] = "Поле обязательно к заполнению";
-            }
+        },
+        'password' => function ($value) {
+            return validateTextLength($value, 8);
+        },
+        'name' => function ($value) {
+            return validateTextLength($value, 5, 80);
+        },
+        'message' => function ($value) {
+            return validateTextLength($value, 10);
         }
+    ];
 
-        $errors = array_filter($errors);
 
-        if (empty($errors)) {
-            $email = mysqli_real_escape_string($con, $formInputs['email']);
-            $sql = "SELECT id FROM users WHERE email = '$email'";
-            $res = mysqli_query($con, $sql);
-            if (mysqli_num_rows($res) > 0) {
-                $errors['email'] = 'Пользователь с этим email уже зарегистрирован';
-            } else {
-                $password = password_hash($formInputs['password'], PASSWORD_DEFAULT);
-                $sql = "INSERT INTO users (email, password, name, contacts) VALUES (?, ?, ?, ?)";
-                $stmt = dbGetPrepareStmt($con, $sql, [$email, $password, $formInputs['name'], $formInputs['message']]);
-                $res = mysqli_stmt_execute($stmt);
-            }
-            if (empty($errors)) {
-                header("Location: /login.php");
-                exit();
-            }
+    $errors = getErrorsValidate($formInputs, $rules, $required);
+
+    if (empty($errors)) {
+
+        $password = password_hash($formInputs['password'], PASSWORD_DEFAULT);
+
+        $sql = "INSERT INTO users (email, password, name, contacts) VALUES (?, ?, ?, ?)";
+        $stmt = dbGetPrepareStmt($con, $sql, [
+            $formInputs['email'],
+            $password,
+            $formInputs['name'],
+            $formInputs['message']
+        ]);
+
+        if (!mysqli_stmt_execute($stmt)) {
+            error_log(mysqli_error($con));
+            http_response_code(500);
+            die("Внутренняя ошибка сервера");
         }
+        header("Location: /login.php");
+        exit();
+
     }
-} catch (Exception $e) {
-    error_log($e->getMessage());
-    http_response_code(500);
-    echo "Внутренняя ошибка сервера";
-    die();
 }
 mysqli_close($con);
 
@@ -86,8 +80,7 @@ $content = includeTemplate('registration.php', [
 ]);
 print includeTemplate('layout.php', [
     'titlePage' => 'Регистрация пользователя',
-    'isAuth' => $isAuth,
-    'userName' => $userName,
+    'user' => $user,
     'menu' => $menu,
     'categories' => $categories,
     'content' => $content

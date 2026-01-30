@@ -56,21 +56,31 @@ function dbGetPrepareStmt(mysqli $link, string $sql, array $data = []): mysqli_s
 function connectDB(array $config): mysqli
 {
     $con = mysqli_connect($config['host'], $config['user'], $config['password'], $config['database']);
-
     mysqli_set_charset($con, 'utf8');
+
+    if (!$con) {
+        error_log(mysqli_connect_error());
+        http_response_code(500);
+        die("Внутренняя ошибка сервера");
+    }
+
     return $con;
 }
 
 
-function getCategories(mysqli $con): array
+function getCategories(mysqli $con): array|false
 {
     $sql = 'SELECT * FROM categories';
     $result = mysqli_query($con, $sql);
-
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    if (!$result) {
+        error_log(mysqli_error($con));
+        http_response_code(500);
+        die("Внутренняя ошибка сервера");
+    }
+    return mysqli_fetch_all($result, MYSQLI_ASSOC) ?? false;
 }
 
-function getLots(mysqli $con): array
+function getLots(mysqli $con): array|false
 {
     $sql = 'SELECT l.id,
        l.title,
@@ -88,11 +98,16 @@ GROUP BY l.id, l.created_at
 ORDER BY l.created_at DESC';
 
     $result = mysqli_query($con, $sql);
+    if (!$result) {
+        error_log(mysqli_error($con));
+        http_response_code(500);
+        die("Внутренняя ошибка сервера");
+    }
 
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC) ?? false;
 }
 
-function getLotById(mysqli $con, int $lotId): array
+function getLotById(mysqli $con, int $lotId): array|false
 {
     $sql = "SELECT l.*, c.title AS category_name,
             COALESCE(MAX(b.price), l.price_start) AS current_price,
@@ -103,10 +118,16 @@ function getLotById(mysqli $con, int $lotId): array
             WHERE l.id = $lotId
             GROUP BY l.id; ";
     $result = mysqli_query($con, $sql);
-    return mysqli_fetch_assoc($result);
+    if (!$result) {
+        error_log(mysqli_error($con));
+        http_response_code(500);
+        die("Внутренняя ошибка сервера");
+    }
+    $lot = mysqli_fetch_assoc($result);
+    return $lot ?? false;
 }
 
-function getBetsByLotID(mysqli $con, $lotId): array
+function getBetsByLotID(mysqli $con, $lotId): array|false
 {
     $sql = "SELECT b.price, b.created_at, u.name AS user_name
             FROM bets b
@@ -114,7 +135,23 @@ function getBetsByLotID(mysqli $con, $lotId): array
             WHERE lot_id = $lotId
             ORDER BY b.created_at DESC;";
 
-    $result = mysqli_query($con, $sql);
 
+    $result = mysqli_query($con, $sql);
+    if (!$result) {
+        error_log(mysqli_error($con));
+        http_response_code(500);
+        die("Внутренняя ошибка сервера");
+    }
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+function getUsersByEmail(mysqli $con, string $email): array|false
+{
+    $sql = "SELECT id, password, name, email FROM users WHERE email = ?";
+    $stmt = dbGetPrepareStmt($con, $sql, [$email]);
+
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $user = mysqli_fetch_assoc($result);
+    return $user ?? false;
 }

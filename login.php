@@ -1,54 +1,64 @@
 <?php
 
 /**
- * @var number $isAuth
- * @var string $userName
  * @var array $config
+ * @var array $user
+ * @var array $categories
+ * @var mysqli $con
  */
 include_once __DIR__ . '/init.php';
 
-try {
-    $con = connectDB($config['db']);
-
-    $categories = getCategories($con);
-    $catIds = array_column($categories, 'id');
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $required = ['email', 'password'];
-        $errors = [];
-
-        $rules = [
-            'email' => function ($value) {
-                return validateEmail($value);
-            },
-            'password' => function ($value) {
-                return validateTextLength($value, 8);
-            }
-        ];
-        $formInputs = filter_input_array(INPUT_POST,
-            [
-                'email' => FILTER_DEFAULT,
-                'password' => FILTER_DEFAULT
-            ]);
-
-        foreach ($formInputs as $key => $value) {
-            if (isset($rules[$key])) {
-                $rule = $rules[$key];
-                $errors[$key] = $rule($value);
-            }
-            if (in_array($key, $required) && empty($value)) {
-                $errors[$key] = "Поле обязательно к заполнению";
-            }
-        }
-
-        $errors = array_filter($errors);
-    }
-} catch (Exception $e) {
-    error_log($e->getMessage());
-    http_response_code(500);
-    echo "Внутренняя ошибка сервера";
-    die();
+if ($user ?? false) {
+    showError403('Доступ запрещен. Вы уже авторизованы', $categories, $user);
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $required = ['email', 'password'];
+    $errors = [];
+    $formInputs = filter_input_array(INPUT_POST,
+        [
+            'email' => FILTER_DEFAULT,
+            'password' => FILTER_DEFAULT
+        ]);
+    $rules = [
+        'email' => function ($value) {
+            return validateEmail($value);
+        },
+        'password' => function ($value) {
+            return validateTextLength($value, 8);
+        }
+    ];
+
+
+    $errors = getErrorsValidate($formInputs, $rules, $required);
+
+    if (empty($errors)) {
+        $user = getUsersByEmail($con, $formInputs['email']);
+
+        if ($user) {
+            if (password_verify($formInputs['password'], $user['password'])) {
+                unset($user['password']);
+                $_SESSION['user'] = $user;
+            } else {
+                $errors['password'] = 'Неверный логин/пароль';
+                $errors['email'] = 'Неверный логин/пароль';
+            }
+        } else {
+            $errors['password'] = 'Неверный логин/пароль';
+            $errors['email'] = 'Неверный логин/пароль';
+        }
+        if (empty($errors)) {
+            header("Location: /");
+            exit();
+        }
+    }
+} else {
+    if (isset($_SESSION['user'])) {
+        header("Location: /");
+        exit();
+    }
+}
+
 mysqli_close($con);
 
 $menu = includeTemplate('menu.php', [
@@ -60,8 +70,7 @@ $content = includeTemplate('login.php', [
 ]);
 print includeTemplate('layout.php', [
     'titlePage' => 'Регистрация пользователя',
-    'isAuth' => $isAuth,
-    'userName' => $userName,
+    'user' => $user,
     'menu' => $menu,
     'categories' => $categories,
     'content' => $content,

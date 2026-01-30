@@ -1,24 +1,15 @@
 <?php
 
 /**
- * @var number $isAuth
- * @var string $userName
+ * @var mysqli $con
+ * @var array $categories
+ * @var array $user
  * @var array $config
  */
 include_once __DIR__ . '/init.php';
 
-try {
-    $con = connectDB($config['db']);
+$lots = getlots($con);
 
-    $categories = getCategories($con);
-
-    $lots = getlots($con);
-} catch (Exception $e) {
-    error_log($e->getMessage());
-    http_response_code(500);
-    echo "Внутренняя ошибка сервера";
-    die();
-}
 mysqli_close($con);
 
 $menu = includeTemplate('promo.php', [
@@ -31,8 +22,7 @@ $content = includeTemplate('lots.php', [
 
 print includeTemplate('layout.php', [
     'titlePage' => 'Главная',
-    'isAuth' => $isAuth,
-    'userName' => $userName,
+    'user' => $user,
     'menu' => $menu,
     'categories' => $categories,
     'content' => $content,

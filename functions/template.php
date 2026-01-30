@@ -1,5 +1,7 @@
 <?php
 
+use JetBrains\PhpStorm\NoReturn;
+
 /**
  * Подключает шаблон, передает туда данные и возвращает итоговый HTML контент
  * @param string $name Путь к файлу шаблона относительно папки templates
@@ -110,4 +112,47 @@ function getTimeRemaining(string $date): array
 function getErrorClass(array $errors, string $field, string $class = 'form__item--invalid'): string
 {
     return isset($errors[$field]) ? $class : '';
+}
+
+function showError403(string $message, array $categories, false|array $user): void
+{
+    $content = includeTemplate('403.php', [
+        'message' => $message,
+        'user' => $user
+    ]);
+    $titlePage = '403 Нет доступа';
+
+    $menu = includeTemplate('menu.php', [
+        'categories' => $categories,
+    ]);
+    print includeTemplate('layout.php', [
+        'titlePage' => $titlePage,
+        'user' => $user,
+        'menu' => $menu,
+        'categories' => $categories,
+        'content' => $content,
+    ]);
+    http_response_code(403);
+    exit();
+}
+
+function showError404(array $categories, $user): void
+{
+    $message = 'Данная страница не существует';
+    $content = includeTemplate('404.php', [
+        'message' => $message
+    ]);
+
+    $menu = includeTemplate('menu.php', [
+        'categories' => $categories,
+    ]);
+    print includeTemplate('layout.php', [
+        'titlePage' => $message,
+        'menu' => $menu,
+        'user' => $user,
+        'categories' => $categories,
+        'content' => $content,
+    ]);
+    http_response_code(404);
+    exit();
 }

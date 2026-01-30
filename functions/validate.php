@@ -75,8 +75,29 @@ function validateDateFormat(string $date): ?string
 function validateEmail(string $value): ?string
 {
     $result = filter_var($value, FILTER_VALIDATE_EMAIL);
+    $errorTextLength = validateTextLength($value, 5, 128);
+
+    if ($errorTextLength !== null) {
+        return $errorTextLength;
+    }
     if ($result === false) {
         return 'Введите корректный email';
     }
+
     return null;
+}
+
+function getErrorsValidate(array $inputs, array $rules, array $required): array
+{
+    $errors = [];
+    foreach ($inputs as $key => $value) {
+        if (isset($rules[$key])) {
+            $rule = $rules[$key];
+            $errors[$key] = $rule($value);
+        }
+        if (in_array($key, $required) && empty($value)) {
+            $errors[$key] = "Поле обязательно к заполнению";
+        }
+    }
+    return array_filter($errors);
 }
