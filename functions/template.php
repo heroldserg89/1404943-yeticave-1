@@ -197,3 +197,33 @@ function formatElapsedTime(string $datetime): string
     );
     return $minutes . ' ' . $word . ' назад';
 }
+
+/**
+ * Проверяет, может ли пользователь сделать ставку на лот
+ *
+ * @param false|array $user Текущий пользователь (или false если не залогинен)
+ * @param array $lot Данные лота
+ * @param array $bets Массив ставок на лот
+ * @return bool true если пользователь может сделать ставку
+ */
+function canUserPlaceBet(false|array $user, array $lot, array $bets): bool
+{
+    // Не залогинен
+    if (!$user) {
+        return false;
+    }
+
+    // Автор лота не может ставить на свой лот
+    if ((int)$user['id'] === (int)$lot['author_id']) {
+        return false;
+    }
+
+    // Если уже есть ставки, текущий пользователь не может перебить свою же ставку
+    if (!empty($bets) && (int)$bets[0]['user_id'] === (int)$user['id']) {
+        return false;
+    }
+
+    return true;
+}
+
+?>

@@ -101,3 +101,18 @@ function getErrorsValidate(array $inputs, array $rules, array $required): array
     }
     return array_filter($errors);
 }
+
+function validateBet(string $value, int $minBid): ?string
+{
+    $numberError = validateNumber($value);
+    if ($numberError !== null) {
+        return $numberError;
+    }
+
+    $bet = (int)$value;
+    if ($bet < $minBid) {
+        return "Ставка должна быть не меньше {$minBid}";
+    }
+
+    return null;
+}

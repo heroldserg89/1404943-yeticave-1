@@ -57,7 +57,7 @@ function connectDB(array $config): mysqli
 {
     $con = mysqli_connect($config['host'], $config['user'], $config['password'], $config['database']);
     mysqli_set_charset($con, 'utf8');
-
+    mysqli_query($con, "SET time_zone = '+03:00'");
     if (!$con) {
         error_log(mysqli_connect_error());
         die("Внутренняя ошибка сервера");
@@ -125,7 +125,7 @@ function getLotById(mysqli $con, int $lotId): array|false
 
 function getBetsByLotID(mysqli $con, $lotId): array|false
 {
-    $sql = "SELECT b.price, b.created_at, u.name AS user_name
+    $sql = "SELECT b.price, b.created_at, u.name AS user_name, u.id as user_id
             FROM bets b
             JOIN users u ON u.id = user_id
             WHERE lot_id = $lotId
