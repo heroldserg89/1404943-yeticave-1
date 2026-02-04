@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 /**
  * Подключает шаблон, передает туда данные и возвращает итоговый HTML контент
  * @param string $name Путь к файлу шаблона относительно папки templates
@@ -44,7 +42,7 @@ function includeTemplate(string $name, array $data = []): string
  * @param string $two Форма множественного числа для 2, 3, 4: яблока, часа, минуты
  * @param string $many Форма множественного числа для остальных чисел
  *
- * @return string Рассчитанная форма множественнго числа
+ * @return string Рассчитанная форма множественного числа
  */
 function getNounPluralForm(int $number, string $one, string $two, string $many): string
 {
@@ -63,9 +61,8 @@ function getNounPluralForm(int $number, string $one, string $two, string $many):
 /**
  * Форматирует цену
  * @param float $price Цена
- * @return string Форматированая цена
+ * @return string Форматированная цена
  */
-
 function formatPrice(float $price): string
 {
     $price = ceil($price);
@@ -78,9 +75,8 @@ function formatPrice(float $price): string
 /**
  * Вычисляет оставшееся время до указанной будущей даты и возвращает количество целых часов и минут.
  * @param string $date дату в формате ГГГГ-ММ-ДД
- * @return array Количество часов и минут до указаной даты
+ * @return array Количество часов и минут до указанной даты
  */
-
 function getTimeRemaining(string $date): array
 {
     $curDate = date_create();
@@ -114,13 +110,13 @@ function getErrorClass(array $errors, string $field, string $class = 'form__item
     return isset($errors[$field]) ? $class : '';
 }
 
-function showError403(string $message, array $categories, false|array $user): void
+function showError(string $message, $errorCode, array $categories, false|array $user): void
 {
-    $content = includeTemplate('403.php', [
+    $content = includeTemplate("$errorCode.php", [
         'message' => $message,
         'user' => $user
     ]);
-    $titlePage = '403 Нет доступа';
+    $titlePage = "$errorCode Нет доступа";
 
     $menu = includeTemplate('menu.php', [
         'categories' => $categories,
@@ -132,40 +128,14 @@ function showError403(string $message, array $categories, false|array $user): vo
         'categories' => $categories,
         'content' => $content,
     ]);
-    http_response_code(403);
-    exit();
-}
-
-function showError404(array $categories, $user): void
-{
-    $message = 'Данная страница не существует';
-    $content = includeTemplate('404.php', [
-        'message' => $message
-    ]);
-
-    $menu = includeTemplate('menu.php', [
-        'categories' => $categories,
-    ]);
-    print includeTemplate('layout.php', [
-        'titlePage' => $message,
-        'menu' => $menu,
-        'user' => $user,
-        'categories' => $categories,
-        'content' => $content,
-    ]);
-    http_response_code(404);
+    http_response_code($errorCode);
     exit();
 }
 
 function buildPaginationLink(int $page): string
 {
-    // Копируем текущие GET-параметры
     $params = $_GET;
-
-    // Добавляем/обновляем параметр page
     $params['page'] = $page;
-
-    // Формируем query string
     return '?' . http_build_query($params);
 }
 
@@ -175,6 +145,7 @@ function buildPaginationLink(int $page): string
  *
  * @param string $datetime Дата в формате 'Y-m-d H:i:s'
  * @return string Отформатированная строка времени
+ * @throws Exception Если передана некорректная строка даты
  */
 function formatElapsedTime(string $datetime): string
 {
@@ -182,18 +153,98 @@ function formatElapsedTime(string $datetime): string
     $past = new DateTime($datetime);
     $interval = $now->diff($past);
 
-    // Вычисляем общее количество часов
+    $totalDays = $interval->days;
     $totalHours = ($interval->days * 24) + $interval->h;
-    if ($totalHours > 0) {
-        return $past->format('d.m.Y в H:i');
+
+    if ($totalDays === 1) {
+        return 'Вчера, в ' . $past->format('H:i');
     }
 
-    $minutes = $interval->i;
-    $word = getNounPluralForm(
-        $minutes,
-        'минуту',
-        'минуты',
-        'минут'
-    );
-    return $minutes . ' ' . $word . ' назад';
+    if ($totalDays === 2) {
+        return 'Позавчера, в ' . $past->format('H:i');
+    }
+
+    // Проверяем часы (если прошло менее 24 часов)
+    if ($totalHours > 0 && $totalHours < 24) {
+        $hours = $interval->h;
+        $word = getNounPluralForm(
+            $hours,
+            'час',
+            'часа',
+            'часов'
+        );
+        return $hours . ' ' . $word . ' назад';
+    }
+
+    // Проверяем минуты (если меньше часа)
+    if ($totalHours === 0 && $interval->i >= 0) {
+        $minutes = $interval->i;
+        $word = getNounPluralForm(
+            $minutes,
+            'минуту',
+            'минуты',
+            'минут'
+        );
+        return $minutes . ' ' . $word . ' назад';
+    }
+
+    // Для всех остальных случаев показываем полную дату
+    return $past->format('d.m.Y в H:i');
+}
+
+/**
+ * Проверяет, может ли пользователь сделать ставку на лот
+ *
+ * @param false|array $user Текущий пользователь (или false если не залогинен)
+ * @param array $lot Данные лота
+ * @param array $bets Массив ставок на лот
+ * @return bool true если пользователь может сделать ставку
+ */
+function canUserPlaceBet(false|array $user, array $lot, array $bets): bool
+{
+    // Не залогинен
+    if (!$user) {
+        return false;
+    }
+
+    // Автор лота не может ставить на свой лот
+    if ((int)$user['id'] === (int)$lot['author_id']) {
+        return false;
+    }
+
+    // Если уже есть ставки, текущий пользователь не может перебить свою же ставку
+    if (!empty($bets) && (int)$bets[0]['user_id'] === (int)$user['id']) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Определяет статус ставки для лота в зависимости от времени и результатов
+ *
+ * Функция анализирует оставшееся время до окончания торгов и сравнивает
+ * идентификатор победителя с идентификатором текущего пользователя,
+ * чтобы определить текущий статус ставки.
+ *
+ * @param string $hours Оставшееся количество часов в формате 'HH'
+ *                     (должно быть строкой с ведущими нулями, например: '03', '12', '00')
+ * @param string $minutes Оставшееся количество минут в формате 'MM'
+ *                       (должно быть строкой с ведущими нулями, например: '05', '30', '00')
+ * @param int|null $winnerId ID пользователя, выигравшего лот
+ *                                 (может быть null, если победитель не определен)
+ * @param int $userId ID текущего пользователя для сравнения с победителем
+ *
+ * @return array Результат в формате [текстовый_статус, класс_статуса]
+ */
+function getBetStatus(string $hours, string $minutes, int|null $winnerId, int $userId): array
+{
+    if ($hours === '00' && $minutes === '00') {
+        if ((int)$winnerId === $userId) {
+            return ['Ставка выиграла', 'win'];
+        }
+        return ['Торги окончены', 'end'];
+    }
+
+    return ["$hours:$minutes", $hours === '00' ? 'finishing' : ''];
 }

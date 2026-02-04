@@ -8,7 +8,7 @@
  */
 include_once __DIR__ . '/init.php';
 
-$lots = getlots($con);
+$lots = getLots($con);
 
 mysqli_close($con);
 

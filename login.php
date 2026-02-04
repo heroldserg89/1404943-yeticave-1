@@ -9,49 +9,28 @@
 include_once __DIR__ . '/init.php';
 
 if ($user ?? false) {
-    showError403('Доступ запрещен. Вы уже авторизованы', $categories, $user);
+    showError('Доступ запрещен. Вы уже авторизованы', 403, $categories, $user);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $required = ['email', 'password'];
-    $errors = [];
-
     $formInputs = filter_input_array(INPUT_POST,
         [
             'email' => FILTER_DEFAULT,
             'password' => FILTER_DEFAULT
         ]);
 
-    $rules = [
-        'email' => function ($value) {
-            return validateEmail($value);
-        },
-        'password' => function ($value) {
-            return validateTextLength($value, 8);
-        }
-    ];
-
-
-    $errors = getErrorsValidate($formInputs, $rules, $required);
+    $errors = validateFormUserLogin($formInputs);
 
     if (empty($errors)) {
-        $user = getUsersByEmail($con, $formInputs['email']);
+        $user = authenticateUser($con, $formInputs['email'], $formInputs['password']);
 
         if ($user) {
-            if (password_verify($formInputs['password'], $user['password'])) {
-                unset($user['password']);
-                $_SESSION['user'] = $user;
-            } else {
-                $errors['password'] = 'Неверный логин/пароль';
-                $errors['email'] = 'Неверный логин/пароль';
-            }
-        } else {
-            $errors['password'] = 'Неверный логин/пароль';
-            $errors['email'] = 'Неверный логин/пароль';
-        }
-        if (empty($errors)) {
+            $_SESSION['user'] = $user;
             header("Location: /");
             exit();
+        } else {
+            $errors['email'] = 'Неверный логин или пароль';
+            $errors['password'] = 'Неверный логин или пароль';
         }
     }
 } else {

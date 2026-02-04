@@ -10,6 +10,7 @@ include_once __DIR__ . '/functions/db.php';
 include_once __DIR__ . '/functions/template.php';
 include_once __DIR__ . '/functions/validate.php';
 include_once __DIR__ . '/functions/auth.php';
+include_once __DIR__ . '/functions/files.php';
 
 if (!file_exists(__DIR__ . '/config.php')) {
     die('Файл конфигурации отсутствует');

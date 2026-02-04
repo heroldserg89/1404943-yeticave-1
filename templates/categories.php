@@ -2,18 +2,18 @@
 /**
  * @var array $lotsBlock
  * @var array $pagination
- * @var int $lotsCount
+ * @var array $lots
  * @var string $title
  */
 ?>
 
 <section class="lots">
     <div class="lots__header">
-        <h2>Результаты поиска по запросу «<span><?= $title; ?></span>»</h2>
+        <h2>Все лоты в категории «<span><?= $title; ?></span>»</h2>
     </div>
 
     <?php if (empty($lots)): ?>
-        <p>По вашему запросу ничего не найдено</p>
+        <p>В данной категории нет лотов!</p>
     <?php else : ?>
         <?= $lotsBlock; ?>
         <?= $pagination; ?>

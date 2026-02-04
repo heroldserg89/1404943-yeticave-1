@@ -9,34 +9,10 @@
 include_once __DIR__ . '/init.php';
 
 if ($user === false) {
-    showError403('Доступ запрещен. Авторизуйтесь', $categories, $user);
+    showError('Доступ запрещен. Авторизуйтесь', 403, $categories, $user);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $required = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];
-
-    $catIds = array_column($categories, 'id');
-
-    $rules = [
-        'lot-name' => function ($value) {
-            return validateTextLength($value, 5, 80);
-        },
-        'category' => function ($value) use ($catIds) {
-            return validateCategory($value, $catIds);
-        },
-        'message' => function ($value) {
-            return validateTextLength($value, 10);
-        },
-        'lot-rate' => function ($value) {
-            return validateNumber($value);
-        },
-        'lot-step' => function ($value) {
-            return validateNumber($value);
-        },
-        'lot-date' => function ($value) {
-            return validateDateFormat($value);
-        }
-    ];
     $formInputs = filter_input_array(INPUT_POST,
         [
             'lot-name' => FILTER_DEFAULT,
@@ -47,45 +23,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'lot-date' => FILTER_DEFAULT,
         ]);
 
-    $errors = getErrorsValidate($formInputs, $rules, $required);
 
-    if (!empty($_FILES['lot-img']['name'])) {
-        $allowedFileTypes = [
-            'image/jpeg' => '.jpg',
-            'image/png' => '.png'
-        ];
-        $tmpName = $_FILES['lot-img']['tmp_name'];
-        $path = $_FILES['lot-img']['name'];
+    $errors = validateFormAddLot($formInputs, $categories);
 
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $file_type = finfo_file($finfo, $tmpName);
-
-        if (!isset($allowedFileTypes[$file_type])) {
-            $errors['lot-img'] = 'Загрузите картинку в формате JPEG и PNG';
-        } else {
-            $filename = uniqid() . $allowedFileTypes[$file_type];
-            $uploadPath = __DIR__ . "/uploads/$filename";
-
-            if (move_uploaded_file($tmpName, $uploadPath)) {
-                $formInputs['lot-img'] = "/uploads/$filename";
-            } else {
-                $errors['lot-img'] = 'Ошибка при загрузке файла';
-            }
-        }
-
+    $upload = uploadImage($_FILES['lot-img'], __DIR__ . '/uploads');
+    if ($upload['error']) {
+        $errors['lot-img'] = $upload['error'];
     } else {
-        $errors['lot-img'] = 'Вы не загрузили файл';
+        $formInputs['lot-img'] = $upload['path'];
     }
     if (empty($errors)) {
-        $formInputs['author_id'] = $user['id'];
-        $sql = "INSERT INTO lots (title, category_id, description, price_start, price_step, end_at, img_url, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmt = dbGetPrepareStmt($con, $sql, $formInputs);
-        $res = mysqli_stmt_execute($stmt);
-        if ($res) {
-            $lotId = mysqli_insert_id($con);
-            header('location: lot.php?id=' . $lotId);
-            exit;
-        }
+        addLot($con, $formInputs, $user);
     }
 }
 
