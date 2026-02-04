@@ -26,7 +26,7 @@
                 <?php
                 [$hours, $minutes] = getTimeRemaining($lot['end_at']); ?>
                 <div class="lot-item__timer timer  <?= $hours === '00' ? 'timer--finishing' : ''; ?>">
-                    <?= "{$hours}:{$minutes}"; ?>
+                    <?= "$hours:$minutes"; ?>
                 </div>
 
                 <div class="lot-item__cost-state">
@@ -45,8 +45,7 @@
                             <label for="cost">Ваша ставка</label>
                             <input id="cost" type="text" name="cost"
                                    placeholder="<?= htmlspecialchars($lot['min_bid']); ?>"
-                                   value="<?= htmlspecialchars($formInputs['cost'] ?? ''); ?>
-                                ">
+                                   value="<?= htmlspecialchars($formInputs['cost'] ?? ''); ?>">
                             <span class="form__error"><?= $errors['cost'] ?? ''; ?></span>
                         </p>
                         <button type="submit" class="button">Сделать ставку</button>

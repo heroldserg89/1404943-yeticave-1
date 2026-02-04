@@ -28,7 +28,7 @@
     <div class="form__item <?= getErrorClass($errors, 'message'); ?>">
         <label for="message">Контактные данные <sup>*</sup></label>
         <textarea id="message" name="message"
-                  placeholder="Напишите как с вами связаться"><?= htmlspecialchars($formInputs['password'] ?? ''); ?></textarea>
+                  placeholder="Напишите как с вами связаться"><?= htmlspecialchars($formInputs['message'] ?? ''); ?></textarea>
         <span class="form__error"><?= $errors['message'] ?? ''; ?></span>
     </div>
     <span class="form__error form__error--bottom">Пожалуйста, исправьте ошибки в форме.</span>

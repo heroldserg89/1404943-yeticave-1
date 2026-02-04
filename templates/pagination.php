@@ -3,10 +3,9 @@
  * @var array $pages
  * @var int $curPage
  */
-
 ?>
-<?php if ($pages): ?>
 
+<?php if (count($pages) > 1): ?>
     <ul class="pagination-list">
         <li class="pagination-item pagination-item-prev">
             <?php if ($curPage === 1): ?>
