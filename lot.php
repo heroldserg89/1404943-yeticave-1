@@ -8,7 +8,8 @@
  */
 include_once __DIR__ . '/init.php';
 
-$lotId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?? 1;;
+$lotId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?? 1;
+;
 
 $lot = getLotById($con, $lotId);
 
@@ -19,10 +20,12 @@ if (!$lot) {
 $bets = getBetsByLotID($con, $lotId);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $formInputs = filter_input_array(INPUT_POST,
+    $formInputs = filter_input_array(
+        INPUT_POST,
         [
             'cost' => FILTER_DEFAULT
-        ]);
+        ]
+    );
     $errors = validateFormBets($formInputs, $lot);
 
     if (empty($errors)) {
@@ -31,14 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 mysqli_close($con);
 $title = $lot['title'];
-$content = includeTemplate('lot.php',
+$content = includeTemplate(
+    'lot.php',
     [
         'lot' => $lot,
         'bets' => $bets,
         'user' => $user,
         'errors' => $errors ?? [],
         'formInputs' => $formInputs ?? []
-    ]);
+    ]
+);
 $menu = includeTemplate('menu.php', [
     'categories' => $categories,
 ]);
@@ -50,5 +55,3 @@ print includeTemplate('layout.php', [
     'menu' => $menu,
     'content' => $content
 ]);
-
-

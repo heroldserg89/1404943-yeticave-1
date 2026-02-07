@@ -6,7 +6,7 @@
  */
 
 ?>
-<form class="form form--add-lot <?= !empty($errors) ? 'form--invalid' : '' ?>" action="add.php" method="post"
+<form class="form form--add-lot <?= !empty($errors) ? 'form--invalid' : '' ?>" action="/add.php" method="post"
       enctype="multipart/form-data">
     <h2>Добавление лота</h2>
     <div class="form__container-two">
@@ -26,7 +26,7 @@
                         <?= $category['id'] === ($formInputs['category'] ?? '') ? 'selected' : ''; ?>>
                         <?= htmlspecialchars($category['title']); ?>
                     </option>
-                <?php
+                    <?php
                 endforeach; ?>
             </select>
             <span class="form__error"><?= $errors['category'] ?? ''; ?></span>

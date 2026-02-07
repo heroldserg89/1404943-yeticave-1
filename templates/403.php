@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var string $message
  * @var false|array $user

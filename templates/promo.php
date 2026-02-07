@@ -15,7 +15,7 @@
                 <a class="promo__link"
                    href="categories.php?id=<?= $category['id']; ?>"><?= htmlspecialchars($category['title']); ?></a>
             </li>
-        <?php
+            <?php
         endforeach; ?>
     </ul>
 </section>

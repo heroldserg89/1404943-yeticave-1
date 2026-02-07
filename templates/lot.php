@@ -38,7 +38,7 @@
                         Мин. ставка <span><?= htmlspecialchars($lot['min_bid']); ?> р</span>
                     </div>
                 </div>
-                <?php if (canUserPlaceBet($user, $lot, $bets) === true): ?>
+                <?php if (canUserPlaceBet($user, $lot, $bets) === true) : ?>
                     <form class="lot-item__form" action="/lot.php?id=<?= $lot['id'] ?>" method="post"
                           autocomplete="off">
                         <p class="lot-item__form-item form__item <?= getErrorClass($errors, 'cost'); ?>">

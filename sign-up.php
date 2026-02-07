@@ -13,14 +13,15 @@ if ($user ?? false) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    $formInputs = filter_input_array(INPUT_POST,
+    $formInputs = filter_input_array(
+        INPUT_POST,
         [
             'email' => FILTER_DEFAULT,
             'password' => FILTER_DEFAULT,
             'name' => FILTER_DEFAULT,
             'message' => FILTER_DEFAULT
-        ]);
+        ]
+    );
     $errors = validateFormRegUser($con, $formInputs);
 
     if (empty($errors)) {

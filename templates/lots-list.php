@@ -17,7 +17,7 @@
             <div class="lot__info">
                 <span class="lot__category"><?= htmlspecialchars($lot['category']); ?></span>
                 <h3 class="lot__title">
-                    <a class="text-link" href="lot.php?id=<?= $lot['id']; ?>">
+                    <a class="text-link" href="/lot.php?id=<?= $lot['id']; ?>">
                         <?= htmlspecialchars($lot['title']); ?>
                     </a>
                 </h3>
@@ -34,7 +34,7 @@
                 </div>
             </div>
         </li>
-    <?php
+        <?php
     endforeach; ?>
 </ul>
 

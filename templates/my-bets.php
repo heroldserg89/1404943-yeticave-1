@@ -8,7 +8,7 @@
     <h2>Мои ставки</h2>
     <?php if (!empty($bets)) : ?>
         <table class="rates__list">
-            <?php foreach ($bets as $bet):
+            <?php foreach ($bets as $bet) :
                 [$hours, $minutes] = getTimeRemaining($bet['end_at']);
                 [$message, $modifier] = getBetStatus($hours, $minutes, $bet['winner_id'], $user['id']);
                 ?>
@@ -21,7 +21,7 @@
                             <h3 class="rates__title"><a
                                     href="/lot.php?id=<?= $bet['lot_id']; ?>"><?= htmlspecialchars($bet['title']); ?></a>
                             </h3>
-                            <?php if ($modifier === 'win'): ?>
+                            <?php if ($modifier === 'win') : ?>
                                 <p><?= $bet['contacts']; ?></p>
                             <?php endif; ?>
                         </div>
@@ -42,7 +42,7 @@
                 </tr>
             <?php endforeach; ?>
         </table>
-    <?php else: ?>
+    <?php else : ?>
         <p>Вы еще не делали ставки.</p>'
     <?php endif; ?>
 </section>

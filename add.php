@@ -13,7 +13,8 @@ if ($user === false) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $formInputs = filter_input_array(INPUT_POST,
+    $formInputs = filter_input_array(
+        INPUT_POST,
         [
             'lot-name' => FILTER_DEFAULT,
             'category' => FILTER_DEFAULT,
@@ -21,7 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'lot-rate' => FILTER_DEFAULT,
             'lot-step' => FILTER_DEFAULT,
             'lot-date' => FILTER_DEFAULT,
-        ]);
+        ]
+    );
 
 
     $errors = validateFormAddLot($formInputs, $categories);

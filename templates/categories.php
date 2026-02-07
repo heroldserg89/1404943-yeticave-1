@@ -12,7 +12,7 @@
         <h2>Все лоты в категории «<span><?= $title; ?></span>»</h2>
     </div>
 
-    <?php if (empty($lots)): ?>
+    <?php if (empty($lots)) : ?>
         <p>В данной категории нет лотов!</p>
     <?php else : ?>
         <?= $lotsBlock; ?>

@@ -1,4 +1,5 @@
 <?php
+
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 
@@ -11,6 +12,7 @@ include_once __DIR__ . '/functions/template.php';
 include_once __DIR__ . '/functions/validate.php';
 include_once __DIR__ . '/functions/auth.php';
 include_once __DIR__ . '/functions/files.php';
+include_once __DIR__ . '/functions/url.php';
 
 if (!file_exists(__DIR__ . '/config.php')) {
     die('Файл конфигурации отсутствует');

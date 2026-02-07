@@ -243,6 +243,27 @@ function getUsersByEmail(mysqli $con, string $email): array|false
     $user = mysqli_fetch_assoc($result);
     return $user ?? false;
 }
+/**
+ * Получает данные пользователя по его ID
+ *
+ * Функция выполняет безопасный запрос к базе данных с использованием подготовленных выражений
+ * для получения информации о пользователе по его уникальному идентификатору.
+ *
+ * @param mysqli $con Объект соединения с базой данных MySQLi
+ * @param int $id Уникальный идентификатор пользователя
+ *
+ * @return array|false Возвращает ассоциативный массив с данными пользователя или false, если пользователь не найден.
+ */
+function getUsersById(mysqli $con, int $id): array|false
+{
+    $sql = "SELECT id, name, email FROM users WHERE id = ?";
+    $stmt = dbGetPrepareStmt($con, $sql, [$id]);
+
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $user = mysqli_fetch_assoc($result);
+    return $user ?? false;
+}
 
 /**
  * Получает категорию по её идентификатору
@@ -569,7 +590,6 @@ function getMyBets(mysqli $con, int $userId): array|false
         die("Внутренняя ошибка сервера");
     }
     return mysqli_fetch_all($result, MYSQLI_ASSOC) ?? false;
-
 }
 
 /**
@@ -602,4 +622,112 @@ function registerUser(mysqli $con, array $formInputs): void
     }
     header("Location: /login.php");
     exit();
+}
+
+
+/**
+ * Получает список завершенных лотов со ставками и определяет победителей
+ *
+ * Функция выполняет запрос к базе данных для получения лотов, время которых истекло,
+ * но победитель еще не назначен. Для каждого лота определяется максимальная ставка
+ * и пользователь, сделавший эту ставку (потенциальный победитель).
+ *
+ * Алгоритм работы:
+ * 1. Выбирает лоты с истекшим временем (end_at < NOW()), где winner_id IS NULL
+ * 2. Для каждого лота находит максимальную ставку
+ * 3. Определяет пользователя, сделавшего максимальную ставку (через подзапрос)
+ * 4. Возвращает результаты, отсортированные по дате окончания (новые первыми)
+ *
+ * @param mysqli $con Объект соединения с базой данных MySQLi
+ *
+ * @return array|false Возвращает ассоциативный массив с результатами или false в случае ошибки.
+ */
+
+function getFinishedLotsWithBets(mysqli $con): array|false
+{
+    $sql = 'SELECT l.id,
+               l.title,
+                MAX(b.price) AS current_price,
+                    (SELECT u.id FROM bets b_inner
+                    JOIN users u ON u.id = b_inner.user_id
+                    WHERE b_inner.lot_id = l.id
+                    ORDER BY b_inner.price DESC
+                    LIMIT 1) AS winner_id
+                FROM lots l
+                JOIN bets b ON l.id = b.lot_id
+                WHERE l.end_at < NOW() and l.winner_id is null
+                GROUP BY l.id, l.end_at
+                ORDER BY l.end_at DESC';
+    $result = mysqli_query($con, $sql);
+    if (!$result) {
+        error_log(mysqli_error($con));
+        die("Внутренняя ошибка сервера");
+    }
+    return mysqli_fetch_all($result, MYSQLI_ASSOC) ?? false;
+}
+
+/**
+ * Массово обновляет победителей для лотов на основе массива данных
+ *
+ * Функция выполняет массовое обновление поля winner_id в таблице lots
+ * с использованием конструкции SQL CASE для эффективного обновления
+ * нескольких записей одним запросом.
+ *
+ * Алгоритм работы:
+ * 1. Проверяет, что входной массив не пустой
+ * 2. Формирует CASE-выражения для каждого лота в формате "WHEN id THEN winner_id"
+ * 3. Собирает список ID лотов для условия WHERE
+ * 4. Выполняет UPDATE запрос с конструкцией CASE
+ * 5. Возвращает количество обновленных строк или код ошибки
+ *
+ * Особенности:
+ * - Обновляет только лоты, у которых winner_id еще не назначен (IS NULL)
+ * - Использует подготовку данных для предотвращения SQL-инъекций через явное приведение типов
+ * - Обрабатывает ошибки выполнения запроса с логированием
+ *
+ * @param mysqli $con Объект соединения с базой данных MySQLi
+ * @param array $lots Массив лотов для обновления. Каждый элемент должен содержать:
+ *                    [
+ *                        'id' => int|string,        // ID лота
+ *                        'winner_id' => int|string  // ID пользователя-победителя
+ *                    ]
+ *                    Может содержать дополнительные поля, которые игнорируются.
+ *
+ * @return int Возвращает:
+ *            - 0, если входной массив пустой
+ *            - Количество обновленных строк (>= 0), если операция успешна
+ *            - -1, если произошла ошибка выполнения SQL-запроса
+ */
+
+function updateLotsWinnersFromArray(mysqli $con, array $lots): int
+{
+    if (empty($lots)) {
+        return 0;
+    }
+
+    $cases = '';
+    $ids = [];
+
+    foreach ($lots as $lot) {
+        $lotId = (int)$lot['id'];
+        $winnerId = (int)$lot['winner_id'];
+        $ids[] = $lotId;
+        $cases .= "WHEN $lotId THEN $winnerId ";
+    }
+
+    $idList = implode(',', $ids);
+
+    $sql = "UPDATE lots
+            SET winner_id = CASE id
+                $cases
+            END
+            WHERE id IN ($idList)
+            AND winner_id IS NULL";
+
+    if (!mysqli_query($con, $sql)) {
+        error_log('Ошибка обновления лотов: ' . mysqli_error($con));
+        return -1;
+    }
+
+    return mysqli_affected_rows($con);
 }

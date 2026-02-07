@@ -12,7 +12,7 @@
         <h2>Результаты поиска по запросу «<span><?= $title; ?></span>»</h2>
     </div>
 
-    <?php if (empty($lots)): ?>
+    <?php if (empty($lots)) : ?>
         <p>По вашему запросу ничего не найдено</p>
     <?php else : ?>
         <?= $lotsBlock; ?>
