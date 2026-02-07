@@ -7,5 +7,14 @@ return [
         'password' => 'your-password',
         'database' => 'your-database',
     ],
-    'mail' => [],
+    'mail' => [
+        'host' => '',
+        'login' => '',
+        'password' => '',
+        'port' => 587,
+        'encryption' => 'tls'
+    ],
+    'pagination' => [
+        'items_per_page' => 9,
+    ]
 ];
